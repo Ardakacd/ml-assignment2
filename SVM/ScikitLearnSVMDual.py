@@ -1,15 +1,15 @@
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import  GridSearchCV
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import accuracy_score
+from SVM.Preprocessor import Preprocessor
 
-from Assignment2.SVM.Preprocessor import Preprocessor
 
 class ScikitLearnSVMDual:
     def __init__(self, kernel='rbf', param_grid={'estimator__C': [0.1, 1, 10], 'estimator__gamma': [0.1, 1, 10]}):
         self.kernel = kernel
         self.param_grid = param_grid
-        self.classifier = OneVsRestClassifier(SVC(kernel=kernel, max_iter=100000, dual=True))
+        self.classifier = OneVsRestClassifier(SVC(kernel=kernel, max_iter=100000))
 
     def train(self, X_train, y_train):
         grid_search = GridSearchCV(self.classifier, self.param_grid, cv=5)

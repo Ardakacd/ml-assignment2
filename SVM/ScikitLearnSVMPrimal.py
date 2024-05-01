@@ -1,9 +1,8 @@
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import  GridSearchCV
 from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import accuracy_score
-
-from Assignment2.SVM.Preprocessor import Preprocessor
+from SVM.Preprocessor import Preprocessor
 
 
 class ScikitLearnSVMPrimal:
