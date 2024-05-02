@@ -17,9 +17,9 @@ class ScratchSVMDual:
         G = cvxopt_matrix(np.vstack((np.eye(row) * -1, np.eye(row))))
         h = cvxopt_matrix(np.hstack((np.zeros(row), np.ones(row) * C)))
         A = cvxopt_matrix(y_train.reshape(1, -1))
-        b = cvxopt_matrix(np.zeros(1))
+        c = cvxopt_matrix(np.zeros(1))
 
-        sol = cvxopt_solvers.qp(P, q, G, h, A, b)
+        sol = cvxopt_solvers.qp(P, q, G, h, A, c)
         alphas = np.array(sol['x'])
 
         w = ((y_train * alphas).T @ X_train).reshape(-1, 1)
@@ -32,8 +32,8 @@ class ScratchSVMDual:
 
         return w.flatten(), b[0], alphas[alphas > 1e-4]
 
-    def test(self, b, alphas, y_train, y_test, X_train, X_test):
-        kernel_matrix = self.gaussian_kernel(X_train, X_test)
+    def test(self, b, alphas, y_train, y_test, X_train, X_test, sigma):
+        kernel_matrix = self.gaussian_kernel(X_train, X_test,sigma)
         y_pred = np.sign(np.dot((alphas * y_train).T, kernel_matrix) + b)
         accuracy = np.mean(y_pred == y_test)
         return accuracy
@@ -47,11 +47,11 @@ class ScratchSVMDual:
 
 
 preprocessor = Preprocessor()
-X_train, y_train = preprocessor.preprocess_train_images(-1)
-X_test, y_test = preprocessor.preprocess_test_images(-1)
+X_train, y_train = preprocessor.preprocess_train_images(2)
+X_test, y_test = preprocessor.preprocess_test_images(2)
 
 s = ScratchSVMDual()
 
 w, b, alphas = s.train(X_train, y_train, 1, 1)
 
-print(s.test(b, alphas, y_train, y_test, X_train, X_test))
+print(s.test(b, alphas, y_train, y_test, X_train, X_test,1))
