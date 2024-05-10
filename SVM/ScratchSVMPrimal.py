@@ -2,30 +2,31 @@ import numpy as np
 from cvxopt import matrix as cvxopt_matrix
 from cvxopt import solvers as cvxopt_solvers
 
-from SVM.Preprocessor import Preprocessor
+from Preprocessor import Preprocessor
 
 
 class ScratchSVMPrimal:
-    C = [0.1, 1, 10]
-    sigma = [0.1, 1, 10]
+    #C = [0.1, 1, 10]
 
     def train(self, X_train, y_train, C):
         row, col = X_train.shape
         y_train = y_train.astype(float)
-        Q = np.zeros((col + 1 + row, col + 1 + row))
-        Q[:col, :col] = np.eye(col)
-        p = np.zeros(col + 1 + row)
-        p[-row:] = C
-        G = np.zeros((2 * row, col + 1 + row))
-        G[:row, :col] = -np.diag(y_train) @ X_train
-        G[:row, col] = -y_train
-        G[:row, -row:] = -np.eye(row)
-        G[row:, -row:] = -np.eye(row)
-        h = -np.ones(2 * row)
-        h[:row] = -1
-        sol = cvxopt_solvers.qp(cvxopt_matrix(Q), cvxopt_matrix(p), cvxopt_matrix(G), cvxopt_matrix(h))
-        w = np.array(sol['x'])[:col]
-        b = np.array(sol['x'])[col]
+
+        Q = np.zeros((col + 1 + row, col + 1 + row))  # b, w, and epsilon
+        Q[1:col+1, 1:col+1] = np.eye(col)
+        p = np.hstack([np.zeros(col + 1), C * np.ones(row)])
+        A = np.zeros((2 * row, col + 1 + row))
+        c = np.zeros(2 * row)
+        for i in range(row):
+            A[i, 0] = y_train[i]
+            A[i, 1:col+1] = y_train[i] * X_train[i]
+            A[i, col+1+i] = 1
+            c[i] = 1
+            A[row+i, col+1+i] = 1
+
+        sol = cvxopt_solvers.qp(cvxopt_matrix(Q), cvxopt_matrix(p), cvxopt_matrix(-A), cvxopt_matrix(-c))
+        b = sol["x"][0]
+        w = sol["x"][1:col+1]
 
         print(w)
         print(b)
@@ -38,11 +39,11 @@ class ScratchSVMPrimal:
 
 
 preprocessor = Preprocessor()
-X_train, y_train = preprocessor.preprocess_train_images(2)
-X_test, y_test = preprocessor.preprocess_test_images(2)
+X_train, y_train = preprocessor.preprocess_train_images(3)
+X_test, y_test = preprocessor.preprocess_test_images(3)
 
 s = ScratchSVMPrimal()
 
-w, b = s.train(X_train, y_train, 1)
+w, b = s.train(X_train, y_train, 0.1)
 
 print(s.test(X_test, w, b, y_test))
