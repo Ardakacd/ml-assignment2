@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import MinMaxScaler
@@ -117,25 +118,33 @@ we can modify the number of trees in the forest by changing
 def train_random_forest(X_train, X_test, y_train, y_test):
     # random forest classifier of scikit learn
     #print("\nRandom Forest Accuracy Values : ")
-    accuracy_vals = []
+    accuracy_vals_train = []
+    accuracy_vals_test = []
     tree_sizes = []
     print("\nRandom Forest Stats :")
     for num_trees in range(10,110,10):
         rforest = RandomForestClassifier(n_estimators=num_trees)
-        rforest.fit(X_train, y_train)
-        y_pred = rforest.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        accuracy_vals.append(accuracy)
+        cv_scores_train = cross_val_score(rforest, X_train, y_train, cv=5)
+        cv_scores_test = cross_val_score(rforest, X_test, y_test, cv=5)        
+        accuracy_train = np.mean(cv_scores_train)
+        accuracy_test = np.mean(cv_scores_test)
+        accuracy_vals_train.append(accuracy_train)
+        accuracy_vals_test.append(accuracy_test)
         tree_sizes.append(num_trees)
-        print(f"Accuracy for {num_trees} trees : ", accuracy)
+        print(f"Training accuracy for {num_trees} trees : ", accuracy_train)
+        print(f"Test accuracy for {num_trees} trees : ", accuracy_test)
+
 
     plt.figure(figsize=(10, 6))
-    plt.plot(tree_sizes, accuracy_vals, marker='o', color='b', linestyle='-')
+    plt.plot(tree_sizes, accuracy_vals_train, marker='o', color='b', linestyle='-', label='Train Accuracy')
+    plt.plot(tree_sizes, accuracy_vals_test, marker='o', color='r', linestyle='-', label='Test Accuracy')
     plt.xlabel('Tree Size')
     plt.ylabel('Accuracy')
     plt.title('Accuracy vs. Tree Size in Random Forests')
+    plt.legend()
     plt.grid(True)
     plt.show()
-    print(f"Average accuracy of random forest : {sum(accuracy_vals) / len(accuracy_vals)}")
+    print(f"Average Train Accuracy of random forest : {np.mean(accuracy_vals_train)}")
+    print(f"Average Test Accuracy of random forest : {np.mean(accuracy_vals_test)}")
 
 train_random_forest(X_train, X_test, y_train, y_test)
