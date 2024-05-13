@@ -4,7 +4,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import accuracy_score
-from SVM.Preprocessor import Preprocessor
+from utils.Preprocessor import Preprocessor
 import matplotlib.pyplot as plt
 import numpy as np
 

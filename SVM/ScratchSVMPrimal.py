@@ -2,7 +2,7 @@ import numpy as np
 from cvxopt import matrix as cvxopt_matrix
 from cvxopt import solvers as cvxopt_solvers
 
-from Preprocessor import Preprocessor
+from utils.Preprocessor import Preprocessor
 
 
 class ScratchSVMPrimal:
