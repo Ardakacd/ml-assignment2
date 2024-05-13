@@ -44,7 +44,7 @@ class Preprocessor:
 
         return label_data
 
-    def preprocess_train_images(self, number=-1, visualize=False, with_hog_features=False):
+    def preprocess_train_images(self, number=-1, visualize=False, with_hog_features=False, normalize = True):
 
         mnist_train_image_filename = 'train-images-idx3-ubyte'
 
@@ -76,11 +76,12 @@ class Preprocessor:
         else:
             filtered_train_images = filtered_images.reshape(filtered_images.shape[0], -1)
 
-            filtered_train_images = filtered_train_images / 255
+            if (normalize) :
+                filtered_train_images = filtered_train_images / 255
 
         return filtered_train_images, y
 
-    def preprocess_test_images(self, number=-1, visualize=False, with_hog_features=False):
+    def preprocess_test_images(self, number=-1, visualize=False, with_hog_features=False, normalize = True):
 
         mnist_test_image_filename = 't10k-images-idx3-ubyte'
 
@@ -112,7 +113,8 @@ class Preprocessor:
         else:
             filtered_test_images = filtered_images.reshape(filtered_images.shape[0], -1)
 
-            filtered_test_images = filtered_test_images / 255
+            if (normalize) :
+                filtered_test_images = filtered_test_images / 255
 
         return filtered_test_images, y
 

@@ -2,7 +2,7 @@ from Preprocessor import Preprocessor
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-
+from collections import Counter
 
 def euclidean_distance(x1, x2):
     return np.sqrt(np.sum((x1 - x2) ** 2))
@@ -24,11 +24,9 @@ class KMeans:
         self.distance_type = distance_type
 
     def fit(self, X):
-        # Randomly initialize cluster centroids
         centroids = [X[i] for i in random.sample(range(len(X)), self.num_clusters)]
 
         for _ in range(self.max_iterations):
-            # Assign each data point to the nearest centroid
             distances = np.zeros((X.shape[0], self.num_clusters))
             for i, centroid in enumerate(centroids):
                 for j, data_point in enumerate(X):
@@ -38,7 +36,6 @@ class KMeans:
                         distances[j, i] = cosine_distance(data_point, centroid)
             cluster_assignments = np.argmin(distances, axis=1)
 
-            # Update centroids
             new_centroids = np.zeros_like(centroids)
             for i in range(self.num_clusters):
                 cluster_points = X[cluster_assignments == i]
@@ -46,14 +43,15 @@ class KMeans:
                     new_centroids[i] = np.mean(cluster_points, axis=0)
                 else:
                     new_centroids[i] = centroids[i]
-
-            if np.allclose(centroids, new_centroids):
-                break
-
             centroids = new_centroids
 
         self.centroids = centroids
         self.cluster_assignments = cluster_assignments
+        
+        self.sse = 0
+        for i, centroid in enumerate(self.centroids):
+            cluster_points = X[self.cluster_assignments == i]
+            self.sse += np.sum((cluster_points - centroid) ** 2)
 
     def predict(self, X):
         distances = np.zeros((X.shape[0], self.num_clusters))
@@ -64,20 +62,51 @@ class KMeans:
                 elif self.distance_type == 'cosine':
                     distances[j, i] = cosine_distance(data_point, centroid)
         return np.argmin(distances, axis=1)
+    
+def assign_labels_to_clusters(labels, true_labels, k):
+    assigned_labels = {}
+    for cluster_idx in range(k):
+        cluster_labels = true_labels[labels == cluster_idx]
+        label_counts = Counter(cluster_labels)
+        most_common_label = label_counts.most_common(1)[0][0]
+        assigned_labels[cluster_idx] = most_common_label
+    return assigned_labels
+
+def calculate_accuracy(true_labels, predicted_labels, k):
+    correct = 0
+    assigned_labels = assign_labels_to_clusters(predicted_labels, true_labels, k)
+    for i in range(true_labels.shape[0]):
+        if assigned_labels[predicted_labels[i]] == true_labels[i]:
+            correct += 1
+    return correct / true_labels.shape[0]
 
 preprocessor = Preprocessor()
-X_train, y_train = preprocessor.preprocess_train_images(-1)
 
-print("XTrain shape: ")  
-print(X_train.shape)  
+X_train, y_train = preprocessor.preprocess_train_images(-1, normalize=True)
+X_test, y_test = preprocessor.preprocess_test_images(-1, normalize=True)
 
-
-kmeans = KMeans(num_clusters=4, max_iterations=200, distance_type='euclidean')
+kmeans = KMeans(distance_type='euclidean')
 kmeans.fit(X_train)
 cluster_assignments = kmeans.cluster_assignments
 centroids = kmeans.centroids
-print(cluster_assignments)
-print(centroids)
-print(centroids[0].shape)
-plot_centroids(centroids=centroids) 
 
+sse = kmeans.sse
+print("Sum of Squared Errors (SSE) for Euclidean Distance:", sse)
+
+predicted_cluster_assignments = kmeans.predict(X_test)
+accuracy = calculate_accuracy(y_test, predicted_cluster_assignments, kmeans.num_clusters)
+print("Accuracy for Euclidean Distance:", accuracy)
+
+print()
+
+kmeans = KMeans(distance_type='cosine')
+kmeans.fit(X_train)
+cluster_assignments = kmeans.cluster_assignments
+centroids = kmeans.centroids
+
+sse = kmeans.sse
+print("Sum of Squared Errors (SSE) for Cosine Distance:", sse)
+
+predicted_cluster_assignments = kmeans.predict(X_test)
+accuracy = calculate_accuracy(y_test, predicted_cluster_assignments, kmeans.num_clusters)
+print("Accuracy for Cosine Distance:", accuracy)
