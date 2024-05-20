@@ -2,7 +2,7 @@ from sklearn.model_selection import  GridSearchCV
 from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import accuracy_score
-from utils.Preprocessor import Preprocessor
+from Preprocessor import Preprocessor
 import time
 
 
