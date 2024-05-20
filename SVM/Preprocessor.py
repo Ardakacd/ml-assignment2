@@ -11,7 +11,6 @@ from skimage.feature import hog
 class Preprocessor:
     digits_of_interest = [2, 3, 8, 9]
 
-
     # function for reading images 
     def read_mnist_images(self, filename):
 
